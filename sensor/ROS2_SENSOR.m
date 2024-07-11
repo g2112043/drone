@@ -11,6 +11,7 @@ properties
     fState  % topicのstate分岐用フラグ（状態の計測データが送られてくるときに有効）
     Node    % ros2nodeを格納
     datatreat
+    topicName
 end
 methods
     function obj = ROS2_SENSOR(self, set_param)
@@ -19,6 +20,7 @@ methods
         % param = set_param;
         Topics = set_param.topics;
         topic.node = obj.Node;%CONNECTORに持っていく用
+        obj.topicName = strings(1,set_param.num);
         for i = 1:set_param.num%sub,pubの生成
             if isfield(Topics,"subTopic")
                 if i <= length(Topics.subTopic)
@@ -35,6 +37,8 @@ methods
                 end
             end
             obj.ros{i} = ROS2_CONNECTOR(topic);
+            tmp = strsplit(obj.ros{i}.subName,"/");
+            obj.topicName(i)= string(tmp{end});
         end
         if isfield(set_param, 'pfunc')%生データの処理
             obj.datatreat = set_param.pfunc;
@@ -55,7 +59,8 @@ methods
         result.state = obj.state;
         for i = 1:length(obj.ros)
             data = obj.ros{i}.getData;
-            result.(matlab.lang.makeValidName(obj.ros{i}.subName,'ReplacementStyle','delete')) = data;            
+            %result.(matlab.lang.makeValidName(obj.ros{i}.subName,'ReplacementStyle','delete')) = data;  
+            result.(obj.topicName(i)) = data;
         end
         if ~isempty(obj.datatreat)
             [result.pc, result.detection] = obj.datatreat(result.scan_behind,result.scan_front);
