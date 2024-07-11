@@ -94,11 +94,15 @@ function [p, q, v, w] = strans_2110(state)
 % v : 1dim
 % w : 1dim
 % p = state.p(1:2, end);
+
+% pの設定
 p = state.p(1:2);
 % switch length(p)
 %     case 3
 %         p = p(1:2);
 % end
+
+% qの設定
 if isprop(state, "q")
     q = state.q(:, end);
     switch length(q)
@@ -111,7 +115,8 @@ if isprop(state, "q")
 else
     q = [];
 end
-if isprop(state, "v")
+% vの設定とデバッグ出力
+if isprop(state, "v") && size(state.v, 2) >= 1
     v = state.v(:, end);
     switch length(v)
         case 3
@@ -120,6 +125,7 @@ if isprop(state, "v")
 else
     v = [];
 end
+% wの設定
 if isprop(state, "w")
     w = state.w(:, end);
     switch length(w)
