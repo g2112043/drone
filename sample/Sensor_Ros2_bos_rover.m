@@ -6,8 +6,8 @@ function Sensor = Sensor_Ros2_bos_rover(topic_number)
 % Sensor:setting ros2 topics
 Sensor.type = mfilename;
 Sensor.name = ["RPLiDAR-S1" "RPLiADR-S1" "megarover Ver3.0" "switchbot"];
-topics.subTopic(1,:) = {'/scan_front','sensor_msgs/LaserScan',1e6};
-topics.subTopic(2,:) = {'/scan_behind' ,'sensor_msgs/LaserScan',1e6};
+topics.subTopic(1,:) = {'/Drp4_7/front_rplidar_node/scan_front','sensor_msgs/LaserScan',1e6};
+topics.subTopic(2,:) = {'/Drp4_7/behind_rplidar_node/scan_behind' ,'sensor_msgs/LaserScan',1e6};
 topics.subTopic(3,:) = {'/rover_odo', 'geometry_msgs/Twist', 1e6};
 topics.subTopic(4,:) = {'/rover_sensor', 'std_msgs/Int16MultiArray', 1e6};
 % topics.subTopic(5,:) = {'/elevator_status', 'std_msgs/String', 1e6};% for switch bot
