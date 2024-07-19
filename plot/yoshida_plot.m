@@ -3,8 +3,8 @@ clc;close all
 % f = @(t) plot(logger.Data.agent.estimator.result{1,t}.state.p(1), ...
 %     logger.Data.agent.estimator.result{1,t}.state.p(2),'r*');
 % fanimator(f)
-
-
+% 
+% 
 % plot(logger.Data.agent.estimator.result{1,3}.state.p(1), ...
 %     logger.Data.agent.estimator.result{1,3}.state.p(2),'r*');
 
@@ -16,7 +16,7 @@ v.FrameRate=5;
 % Duration
 open(v)
 for j = 1:logger.k
-    
+
     scatter(agent.estimator.fixedSeg.Location(:,1),agent.estimator.fixedSeg.Location(:,2),10,"filled")
     hold(ax,"on")    
     pr_x(j) = logger.Data.agent.reference.result{1,j}.state.p(1,1);
