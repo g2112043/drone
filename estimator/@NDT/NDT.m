@@ -12,7 +12,7 @@ end
         PCdata_use                   %pcregisterndtに使用するスキャンデータ(PointCloud)
         matching_mode                %slam or mapmatching
         mapname                      %mapmatchingの時ロードするmatファイル名.中身がfixedSeg(PointCloud)である必要がある
-        gridstep = 1.0;              %pcregisterndtに使用するボクセルのグリッドサイズ(メートル)
+        gridstep = 1.3;              %pcregisterndtに使用するボクセルのグリッドサイズ(メートル)
     end
     
     methods
@@ -34,70 +34,29 @@ end
 
   %通常
 
-    % function [result] = do(obj, varargin)
-    %     obj.PCdata_use = obj.self.sensor.result.pc;
-    %     obj.tform = pcregisterndt(obj.PCdata_use, obj.fixedSeg,obj.gridstep, ...
-    %         "InitialTransform", obj.initialtform, "OutlierRatio", 0.1, "Tolerance", [0.5 0.5], ...
-    %         "MaxIterations",5); %NDTマッチング
-    %     if (obj.matching_mode == "slam")
-    %         ndt_PCdata = pctransform(obj.PCdata_use, obj.tform);
-    %         obj.fixedSeg = pcmerge(obj.fixedSeg, ndt_PCdata, 0.01);
-    %     end
-    %     if isfield(obj.self.sensor.result, "rover_odo")
-    %         obj.tform_add_odom(obj.self.sensor.result.rover_odo);
-    %     else
-    %         obj.tform_add_odom(struct('linear', struct('x', obj.self.controller.result.input(1)), 'angular', struct('z', obj.self.controller.result.input(2))));
-    %     end
-    %     obj.result.tform = obj.tform;%disp(obj.tform);
-    %     obj.result.ndtPCdata = obj.PCdata_use;
-    %     tmpvalue.p = obj.tform.Translation';
-    %     tmpvalue.q = rotm2eul(obj.tform.R, "XYZ")';        
-    %     obj.result.state.set_state(tmpvalue); % % % % %推定結果
-    %     obj.model.state.set_state(tmpvalue); % % % % % %モデルの更新
-    % end
-
- %ズレが発生した際に初期マッチングをし直すDOプログラム
-
     function [result] = do(obj, varargin)
-        % LiDARデータを使用してNDTマッチングを行う
         obj.PCdata_use = obj.self.sensor.result.pc;
-        obj.tform = pcregisterndt(obj.PCdata_use, obj.fixedSeg, obj.gridstep, ...
+        obj.tform = pcregisterndt(obj.PCdata_use, obj.fixedSeg,obj.gridstep, ...
             "InitialTransform", obj.initialtform, "OutlierRatio", 0.1, "Tolerance", [0.5 0.5], ...
             "MaxIterations",5); %NDTマッチング
-    
-        % ずれの計算（閾値は適宜調整してください）
-        threshold = 0.5; % 設定する閾値
-        estimated_position = obj.tform.Translation(1:2);
-        actual_position = obj.result.state.p(1:2);
-        displacement = norm(estimated_position - actual_position);
-    
-        % ずれが閾値を超えた場合に初期マッチングをやり直す
-        if displacement > threshold
-            disp('Threshold exceeded. Reinitializing the transformation.')
-            obj.initialtform = obj.initial_matching(obj.initialtform);
-            obj.tform = pcregisterndt(obj.PCdata_use, obj.fixedSeg, obj.gridstep, ...
-                "InitialTransform", obj.initialtform, "OutlierRatio", 0.1, "Tolerance", [0.5 0.5], ...
-                "MaxIterations",5); %NDTマッチング
-        end
-
         if (obj.matching_mode == "slam")
             ndt_PCdata = pctransform(obj.PCdata_use, obj.tform);
             obj.fixedSeg = pcmerge(obj.fixedSeg, ndt_PCdata, 0.01);
         end
-
         if isfield(obj.self.sensor.result, "rover_odo")
             obj.tform_add_odom(obj.self.sensor.result.rover_odo);
         else
             obj.tform_add_odom(struct('linear', struct('x', obj.self.controller.result.input(1)), 'angular', struct('z', obj.self.controller.result.input(2))));
         end
-    
-        obj.result.tform = obj.tform; %disp(obj.tform);
+        obj.result.tform = obj.tform;%disp(obj.tform);
         obj.result.ndtPCdata = obj.PCdata_use;
         tmpvalue.p = obj.tform.Translation';
-        tmpvalue.q = rotm2eul(obj.tform.R, "XYZ")';
-        obj.result.state.set_state(tmpvalue); % 推定結果
-        obj.model.state.set_state(tmpvalue); % モデルの更新
+        tmpvalue.q = rotm2eul(obj.tform.R, "XYZ")';        
+        obj.result.state.set_state(tmpvalue); % % % % %推定結果
+        obj.model.state.set_state(tmpvalue); % % % % % %モデルの更新
     end
+
+ %ズレが発生した際に初期マッチングをし直すDOプログラム
 
     function initform = initial_matching(obj, initialtform)
         %コンストラクタでロボット初期位置の探索を行う

@@ -30,16 +30,38 @@ function Reference = Reference_Point(agent,pmun)
     % test2
     point(1).p = [0;6;0];           %y直進(floor)
     point(1).q = [0;0;deg2rad(90)]; %y直進(floor)
-    point(2).p = [1.5;6;0];         %x方向転換(floor)
+    point(2).p = [0;6.5;0];         %x方向転換(floor)
     point(2).q = [0;0;deg2rad(0)];  %x方向転換(floor)
     point(3).p = [31.5;6;0];        %x直進(floor)
     point(3).q = [0;0;rad2deg(0)];  %x直進(floor)
-    point(4).p = [31.5;8;0];        %y方向転換+y直進(floor->elevetor hall)
-    point(4).q = [0;0;rad2deg(90)]; %y方向転換+y直進(floor->elevetor hall)
-    point(5).p = [30;9.5;0];        %(elevetor hall)
-    point(5).q = [0;0;rad2deg(90)]; %(elevetor hall)
-    point(6).p = [29.5;9.5;0];      %(elevetor hall)
+    point(4).p = [31.5;6;0];        %x直進(floor)
+    point(4).q = [0;0;rad2deg(0)];  %x直進(floor)
+    point(5).p = [31.5;9.5;0];        %y方向転換+y直進(floor->elevetor hall)
+    point(5).q = [0;0;rad2deg(90)]; %y方向転換+y直進(floor->elevetor hall)
+    point(6).p = [30;9.5;0];        %(elevetor hall)
     point(6).q = [0;0;rad2deg(90)]; %(elevetor hall)
+    point(7).p = [29.5;9.5;0];      %(elevetor hall)
+    point(7).q = [0;0;rad2deg(90)]; %(elevetor hall)
+    % ゴールポイントをリファレンスポイントの6番目に設定
+Reference.goal_point = point(7);
+
+
+    % %floor直進時に複数のポイントをセット
+    % point(1).p = [0;6;0];           %y直進(floor)
+    % point(1).q = [0;0;deg2rad(90)]; %y直進(floor)
+    % point(2).p = [1.5;6;0];         %x方向転換(floor)
+    % point(2).q = [0;0;deg2rad(0)];  %x方向転換(floor)
+    % point(3).p = [16;6;0];        %x直進(floor)
+    % point(3).q = [0;0;rad2deg(0)];  %x直進(floor)
+    % point(4).p = [31.5;6;0];        %x直進(floor)
+    % point(4).q = [0;0;rad2deg(0)];  %x直進(floor)
+    % point(5).p = [31.5;8;0];        %y方向転換+y直進(floor->elevetor hall)
+    % point(5).q = [0;0;rad2deg(90)]; %y方向転換+y直進(floor->elevetor hall)
+    % point(6).p = [30;9.5;0];        %(elevetor hall)
+    % point(6).q = [0;0;rad2deg(90)]; %(elevetor hall)
+    % point(7).p = [29.5;9.5;0];      %(elevetor hall)
+    % point(7).q = [0;0;rad2deg(90)]; %(elevetor hall)
+
 
     % %ホールに入るとき検証用
     % point(1).p = [31.5;6.2;0];

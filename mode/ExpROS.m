@@ -35,29 +35,85 @@ agent.estimator = NDT(agent,Estimator_NDT(agent,dt,MODEL_CLASS(agent,Model_Three
 agent.reference = POINT_REFERENCE(agent,Reference_Point(agent,0));
 agent.controller = APID_CONTROLLER(agent,Controller_APID(dt));
 run("ExpBase");
+
 %% main loop of running modefile only
+% if str == "mode file only"
+% while (time.t < time.te)
+%     tStart = tic;
+%     agent.sensor.do(time,'f',0,0,agent,1);
+%     % motive.getData(agent);
+%     agent.estimator.do(time);
+%     agent.reference.do(time,'f');
+%     agent.controller.do(time,'f');
+%     agent.plant.do(time, 'f');
+%     logger.logging(time, 'f', agent);
+% 
+%     x(time.k) = agent.estimator.result.state.p(1);
+%     y(time.k) = agent.estimator.result.state.p(2);
+%     plot(agent.reference.param.ax,x,y,"o");
+%     time.k = logger.k;
+% 
+%     disp(time.t)
+%     pause(time.dt - toc(tStart));
+%     time.t = time.t + time.dt;    
+% end
+
+%% 描画を加えたwhile文
 if str == "mode file only"
 while (time.t < time.te)
-    tStart = tic;
-    agent.sensor.do(time,'f',0,0,agent,1);
-    % motive.getData(agent);
-    agent.estimator.do(time);
-    agent.reference.do(time,'f');
-    agent.controller.do(time,'f');
-    agent.plant.do(time, 'f');
-    logger.logging(time, 'f', agent);
+        tStart = tic;
 
-    x(time.k) = agent.estimator.result.state.p(1);
-    y(time.k) = agent.estimator.result.state.p(2);
-    plot(agent.reference.param.ax,x,y,"o");
-    time.k = logger.k;
+        % センサデータ処理とログ更新
+        agent.sensor.do(time,'f',0,0,agent,1);
+        agent.estimator.do(time);
+        agent.reference.do(time,'f');
+        agent.controller.do(time,'f');
+        agent.plant.do(time, 'f');
+        logger.logging(time, 'f', agent);
 
-    disp(time.t)
-    pause(time.dt - toc(tStart));
-    time.t = time.t + time.dt;    
+        % 推定位置のプロット
+        x(time.k) = agent.estimator.result.state.p(1);
+        y(time.k) = agent.estimator.result.state.p(2);
+
+        % 事前地図のプロット (fixedSeg)
+        scatter(agent.estimator.fixedSeg.Location(:,1), agent.estimator.fixedSeg.Location(:,2), 8, "filled");
+        hold on;
+
+        % NDT適用後の点群を描画
+        ndtpc = pctransform(agent.estimator.result.ndtPCdata, agent.estimator.result.tform); % NDT適用後
+        scatter(ndtpc.Location(:,1), ndtpc.Location(:,2), 3, "filled", 'MarkerFaceColor', [0.3 0.8 0.3]); % NDTで合わせた点群
+
+        % ロボットの位置と進行方向の描画
+        robot_x = agent.estimator.result.state.p(1);
+        robot_y = agent.estimator.result.state.p(2);
+        yaw = agent.estimator.result.state.q(3);  % yaw角を取得
+        arrow_length = 0.5;  % 矢印の長さ
+        x_dir = arrow_length * cos(yaw);
+        y_dir = arrow_length * sin(yaw);
+        quiver(robot_x, robot_y, x_dir, y_dir, 'MaxHeadSize', 10, 'Color', 'r', 'LineWidth', 2); % ロボットの向き
+        
+        % リファレンスポイントのプロット (理想的な位置)
+        ref_x = agent.reference.result.state.p(1); % リファレンスポイントのx座標
+        ref_y = agent.reference.result.state.p(2); % リファレンスポイントのy座標
+        scatter(ref_x, ref_y, 100, 'p', 'MarkerEdgeColor', [1 0 0], 'MarkerFaceColor', [1 1 1]); % 星形 (pentagram), 赤色
+
+        % リファレンス経路の描画
+        plot(agent.reference.param.ax, x, y, "o");
+
+        % 現在の時刻を表示
+        disp(time.t);
+
+        % 描画の更新
+        drawnow;
+        hold off;
+
+        % 時間調整
+        pause(time.dt - toc(tStart));
+        time.t = time.t + time.dt;    
+    end
+    agent.plant.do(time, 's');
 end
-agent.plant.do(time, 's');
-end
+
 %% functions for main_GUI
 function post(app)
 app.logger.plot({1, "p", "er"},"ax",app.UIAxes,"xrange",[app.time.ts,app.time.te]);
