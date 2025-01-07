@@ -140,6 +140,14 @@ methods
                 cha = "s";
             end
         end
+        % if isfield(obj.self.sensor.result,"detection") % 前方に障害物がある場合
+        %     distances = obj.self.sensor.result.detection; % 点群データの距離取得
+        %     if any(distances < 0.5) % 距離が閾値以下
+        %         cha = "s";
+        %         disp("障害物検知: 停止します。");
+        %     end
+        % end
+
         if isfield(obj.self.sensor.result,"rover_sensor")%バンパーが当たったら停止
             if obj.self.sensor.result.rover_sensor.data(1) ~=0
                 cha ="s";

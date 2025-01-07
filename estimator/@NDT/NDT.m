@@ -56,8 +56,6 @@ end
         obj.model.state.set_state(tmpvalue); % % % % % %モデルの更新
     end
 
- %ズレが発生した際に初期マッチングをし直すDOプログラム
-
     function initform = initial_matching(obj, initialtform)
         %コンストラクタでロボット初期位置の探索を行う
         if obj.matching_mode == "slam"
@@ -84,13 +82,51 @@ end
         % B = [cos(zini(6)), 0; sin(zini(6)), 0; 0, 1] ;
         x_yaw = rotm2eul(obj.tform.R,"XYZ");
         B = [cos(x_yaw(3)), 0; sin(x_yaw(3)), 0; 0, 1] ;
-        x_yaw = rotm2eul(obj.tform.R, "XYZ");
+        % x_yaw = rotm2eul(obj.tform.R, "XYZ");
         X_k = [obj.tform.Translation(1:2), x_yaw(3)]';
         X_kk = X_k + (B * u);
         initialtform_T = X_kk(1:2);
         initialtform_rot = eul2rotm([0 0 X_kk(3)], "XYZ");
         obj.initialtform = rigidtform3d(initialtform_rot, [initialtform_T; 0]);
     end
+
+    % function tform_add_odom(obj, odom_data)
+    %     % ローバーの加速度、角速度をuに入れてモデルの状態を更新
+    %     u = [odom_data.linear.x, odom_data.angular.z]' * obj.model.dt; % 入力データからΔxとΔyを計算
+    %     x_yaw = rotm2eul(obj.tform.R, "XYZ"); % 現在の回転角を取得
+    %     X_k = [obj.tform.Translation(1:2); x_yaw(3)]; % 現在の位置と角度
+    % 
+    %     % Δx, Δyの斜距離を計算
+    %     delta_distance = sqrt(u(1)^2 + (u(2) * obj.model.dt)^2);
+    % 
+    %     % Δx, Δyの方向をNDT結果の差分から算出
+    %     if isfield(obj.result, 'prev_tform')
+    %         % 直前のNDT結果がある場合、その差分を用いて方向を決定
+    %         prev_tform = obj.result.prev_tform;
+    %         prev_position = prev_tform.Translation(1:2)';
+    %         current_position = obj.tform.Translation(1:2)';
+    %         direction = (current_position - prev_position) / norm(current_position - prev_position);
+    %     else
+    %         % 初回の場合はデフォルト方向（現在の向き）
+    %         direction = [cos(x_yaw(3)); sin(x_yaw(3))];
+    %     end
+    % 
+    %     % 修正後のΔxとΔy
+    %     delta_x = delta_distance * direction(1);
+    %     delta_y = delta_distance * direction(2);
+    % 
+    %     % 更新後の位置と角度
+    %     X_kk = X_k + [delta_x; delta_y; u(2) * obj.model.dt];
+    % 
+    %     % 次回の初期値用にrigidtform3dを更新
+    %     initialtform_rot = eul2rotm([0 0 X_kk(3)], "XYZ");
+    %     initialtform_T = [X_kk(1:2); 0];
+    %     obj.initialtform = rigidtform3d(initialtform_rot, initialtform_T);
+    % 
+    %     % 現在のtformを保存（次のNDT差分計算に使用）
+    %     obj.result.prev_tform = obj.tform;
+    % end
+
 
     function plot(obj, logger, save)
         %推定値をplot
